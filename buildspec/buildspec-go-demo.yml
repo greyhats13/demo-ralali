@@ -7,7 +7,7 @@ phases:
     commands:
       - ls -la
 
-      - echo Check AWS & Git
+      - echo Check AWS, Git
       - aws --version && git --version
       - echo Check ENV Variable
       - printenv
@@ -23,7 +23,7 @@ phases:
     commands:
       - echo build Docker image on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest  -f deployment/dockerfiles/dockerfiles-go-demo .
+      - docker build -t $REPOSITORY_URI:latest  -f deployment/dockerfiles/dockerfiles-go-d .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
