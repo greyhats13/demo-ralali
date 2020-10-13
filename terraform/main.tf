@@ -27,6 +27,6 @@ module "ecs" {
   vpc_zone_identifier = flatten([module.vpc.nodes_subnet])
 }
 
-module "codebuild" {
-  source              = "./codebuild"
-}
+# module "codebuild" {
+#   source              = "./codebuild"
+# }
