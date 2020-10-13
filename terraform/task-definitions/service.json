@@ -1,7 +1,7 @@
 [
   {
     "name": "go-demo",
-    "image": "518667233221.dkr.ecr.ap-southeast-2.amazonaws.com/go-demo:latest",
+    "image": "518667233221.dkr.ecr.ap-southeast-2.amazonaws.com/go-demo:alpha",
     "cpu": 256,
     "memory": 128,
     "essential": true,

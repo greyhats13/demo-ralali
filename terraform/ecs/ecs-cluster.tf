@@ -449,7 +449,7 @@ resource "aws_ecs_service" "ecs-service-demo" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.demo-tg.arn
-    container_name   = "go-demo-1"
+    container_name   = "go-demo"
     container_port   = 8080
   }
 
@@ -460,7 +460,7 @@ resource "aws_ecs_service" "ecs-service-demo" {
 
   service_registries {
     registry_arn   = aws_service_discovery_service.service-discovery-demo.arn
-    container_name = "go-demo-1"
+    container_name = "go-demo"
   }
 
   network_configuration {

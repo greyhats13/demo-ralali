@@ -25,6 +25,7 @@ phases:
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest -f deployment/dockerfiles/dockerfiles-go-demo .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:latest
   post_build:
     commands:
       - echo build Docker image complete `date`
