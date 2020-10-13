@@ -1,4 +1,4 @@
 .aws
 .terraform
 terraform.tfstate
-terraform.tfstate.backups
+terraform.tfstate.backup

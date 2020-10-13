@@ -15,8 +15,8 @@ func main() {
 func demoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	resp, _ := json.Marshal(map[string]string{
-		"Sumber IP":  getSourceIp(r),
-		"Tujuan IP.": getDestinationIp(r),
+		"Source IP":      getSourceIp(r),
+		"Destination IP": getDestinationIp(r),
 	})
 	w.Write(resp)
 }
