@@ -6,7 +6,7 @@ WORKDIR $GOPATH/src/ralali/
 
 COPY . .
 
-RUN GOOS=linux GOARCH=amd64 go build -o /go/bin/imam-demo
+RUN GOOS=linux GOARCH=amd64 go build -o /go/bin/demo
 
 FROM alpine:3.12
 
