@@ -16,9 +16,9 @@ module "ec2" {
   public_subnet = flatten([module.vpc.public_subnet])
 }
 
-module "ecr" {
-  source = "./ecr"
-}
+# module "ecr" {
+#   source = "./ecr"
+# }
 
 module "ecs" {
   source              = "./ecs"
@@ -30,3 +30,4 @@ module "ecs" {
 # module "codebuild" {
 #   source              = "./codebuild"
 # }
+

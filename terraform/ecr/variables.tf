@@ -1,8 +1,7 @@
 variable "ecr_name" {
   type = list(string)
   default = [
-    "go-demo-1",
-    "go-demo-2"
+    "go-demo"
   ]
   description = "Name of the ECR"
 }

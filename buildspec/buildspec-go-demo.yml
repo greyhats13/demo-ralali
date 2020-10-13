@@ -16,7 +16,7 @@ phases:
 
       - echo Logging into AWS ECR...
       - $(aws ecr get-login --no-include-email --region ap-southeast-2)
-      - REPOSITORY_URI=518667233221.dkr.ecr.ap-southeast-2.amazonaws.com/go-demo-1
+      - REPOSITORY_URI=518667233221.dkr.ecr.ap-southeast-2.amazonaws.com/go-demo
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
