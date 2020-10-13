@@ -1,0 +1,11 @@
+#!/bin/bash
+sudo yum update -y ecs-init
+echo ECS_CLUSTER=${cluster_name} >> /etc/ecs/ecs.config;
+echo ECS_BACKEND_HOST= >> /etc/ecs/ecs.config;
+echo ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=15m >> /etc/ecs/ecs.config;
+echo ECS_IMAGE_CLEANUP_INTERVAL=10m >> /etc/ecs/ecs.config;
+echo ECS_IMAGE_MINIMUM_CLEANUP_AGE=15m >> /etc/ecs/ecs.config;
+touch /etc/sysctl.d/50-coredump.conf
+echo "kernel.core_pattern=|/bin/false" >> /etc/sysctl.d/50-coredump.conf
+sysctl -p /etc/sysctl.d/50-coredump.conf
+sudo service docker restart && sudo start ecs
