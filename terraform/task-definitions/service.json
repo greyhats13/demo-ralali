@@ -2,26 +2,13 @@
   {
     "name": "go-demo-1",
     "image": "greyhats13/go-demo:alpha",
-    "cpu": 128,
+    "cpu": 256,
     "memory": 128,
     "essential": true,
     "portMappings": [
       {
         "containerPort": 8080,
         "hostPort": 8080
-      }
-    ]
-  },
-  {
-    "name": "go-demo-2",
-    "image": "greyhats13/go-demo:alpha",
-    "cpu": 128,
-    "memory": 128,
-    "essential": true,
-    "portMappings": [
-      {
-        "containerPort": 443,
-        "hostPort": 443
       }
     ]
   }

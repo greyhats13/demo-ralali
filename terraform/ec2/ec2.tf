@@ -33,11 +33,10 @@ resource "aws_key_pair" "this" {
 }
 
 resource "aws_instance" "bastion" {
-  count                  = length(var.public_subnet)
   instance_type          = var.instance_type
   ami                    = var.instance_ami
   key_name               = aws_key_pair.this.key_name
-  subnet_id              = element(var.public_subnet, count.index)
+  subnet_id              = element(var.public_subnet, 0)
   vpc_security_group_ids = [aws_security_group.bastion-sg.id]
 
   root_block_device {

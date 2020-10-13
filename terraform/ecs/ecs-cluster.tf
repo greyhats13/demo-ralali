@@ -69,8 +69,9 @@ data "template_file" "user_data" {
     cluster_name = "ecs-demo"
   }
 }
+
 resource "aws_launch_template" "ecs_instance_template" {
-  name = "rll-instance-template-demo"
+  name = "ecs-template-demo"
   iam_instance_profile {
     arn = aws_iam_instance_profile.demo-profile.arn
   }
@@ -83,7 +84,7 @@ resource "aws_launch_template" "ecs_instance_template" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "rll-instance-template-demo"
+      Name = "ecs-template-demo"
     }
   }
 }
@@ -116,7 +117,7 @@ resource "aws_autoscaling_group" "autoscaling-demo" {
     }
 
     instances_distribution {
-      on_demand_base_capacity                  = 2
+      on_demand_base_capacity                  = 3
       on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "lowest-price"
       spot_max_price                           = ""
@@ -132,7 +133,7 @@ resource "aws_autoscaling_group" "autoscaling-demo" {
   protect_from_scale_in = true
 }
 
-resource "aws_ecs_capacity_provider" "capacity_provider" {
+resource "aws_ecs_capacity_provider" "capacity-provider" {
   name = "capacity-provider-demo"
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.autoscaling-demo.arn
@@ -146,7 +147,7 @@ resource "aws_ecs_capacity_provider" "capacity_provider" {
 
 resource "aws_ecs_cluster" "ecs-demo" {
   name               = "ecs-demo"
-  capacity_providers = aws_ecs_capacity_provider.capacity_provider.*.name
+  capacity_providers = aws_ecs_capacity_provider.capacity-provider.*.name
 }
 
 resource "aws_security_group" "alb-demo-sg" {
@@ -206,6 +207,33 @@ resource "aws_lb_listener" "demo-http-listener" {
   }
 }
 
+resource "aws_lb_listener_rule" "listener-rule-demo" {
+  depends_on = [aws_lb_target_group.demo-tg]
+
+  listener_arn = aws_lb_listener.demo-http-listener.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.demo-tg.arn
+  }
+
+  condition {
+    http_request_method {
+      values = ["GET", "HEAD"]
+    }
+  }
+
+  ############# Uncomment, if use path_pattern condition
+  dynamic "condition" {
+    for_each = ["/static/*"] == "" ? [] : ["true"]
+    content {
+      path_pattern {
+        values = ["/static/*"]
+      }
+    }
+  }
+}
+
 # resource "aws_lb_listener" "service_lb_listener_https" {
 #   load_balancer_arn = aws_lb.service_lb.arn
 
@@ -228,7 +256,7 @@ resource "aws_iam_role" "task-definition-role-demo" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "ec2.amazonaws.com"
+        "Service": "ecs-tasks.amazonaws.com"
       },
       "Effect": "Allow",
       "Sid": ""
@@ -243,7 +271,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "iam-role-policy-attachment-task-definition-demo" {
   role       = aws_iam_role.task-definition-role-demo.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_role" "task-execution-role-demo" {
@@ -255,7 +283,7 @@ resource "aws_iam_role" "task-execution-role-demo" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "ec2.amazonaws.com"
+        "Service": "ecs-tasks.amazonaws.com"
       },
       "Effect": "Allow",
       "Sid": ""
@@ -439,49 +467,12 @@ resource "aws_ecs_service" "ecs-service-demo" {
     subnets         = var.vpc_zone_identifier
     security_groups = [aws_security_group.ecs-service-demo-sg.id]
   }
-}
 
-resource "aws_lb_target_group" "service-tg" {
-  name   = "service-tg"
-  vpc_id = var.vpc_id
-
-  target_type          = "ip"
-  port                 = tostring(80)
-  protocol             = "HTTP"
-  deregistration_delay = 15
-
-  health_check {
-    protocol = "HTTP"
-    path     = "/"
-    matcher  = "200"
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.capacity-provider.name
+    weight            = 1
+    base              = 0
   }
-}
-
-resource "aws_lb_listener_rule" "listener-rule-demo" {
-  depends_on = [aws_lb_target_group.service-tg]
-
-  listener_arn = aws_lb_listener.demo-http-listener.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.service-tg.arn
-  }
-
-  condition {
-    http_request_method {
-      values = ["GET", "HEAD"]
-    }
-  }
-
-  ############## Uncomment, if use path_pattern condition
-  # dynamic "condition" {
-  #   for_each = ["/static/*"] == "" ? [] : ["true"]
-  #   content {
-  #     path_pattern {
-  #       values = ["/static/*"]
-  #     }
-  #   }
-  # }
 }
 
 resource "aws_iam_role" "ecs-autoscaling-role" {
