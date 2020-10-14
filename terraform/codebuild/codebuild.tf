@@ -63,10 +63,7 @@ resource "aws_iam_role_policy" "codebuild_demo" {
       ],
       "Condition": {
         "StringEquals": {
-          "ec2:Subnet": [
-            "${aws_subnet.codebuild_demo1.arn}",
-            "${aws_subnet.codebuild_demo2.arn}"
-          ],
+          "ec2:Subnet": [var.nodes_subnet],
           "ec2:AuthorizedService": "codebuild.amazonaws.com"
         }
       }
@@ -86,6 +83,36 @@ resource "aws_iam_role_policy" "codebuild_demo" {
 POLICY
 }
 
+resource "aws_security_group" "codebuild_sg" {
+  name        = "codebuild_sg"
+  description = "kubectl_instance_sg"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "codebuild-security-group"
+  }
+}
+
+# resource "aws_codebuild_source_credential" "example" {
+#   auth_type   = "PERSONAL_ACCESS_TOKEN"
+#   server_type = "GITHUB"
+#   token       = "1b8bdb21e27b2bd220d145b64683294c1a272b7e"
+# }
+
 resource "aws_codebuild_project" "codebuild_demo" {
   name          = "codebuild_demo"
   description   = "testing codebuild demo"
@@ -103,33 +130,33 @@ resource "aws_codebuild_project" "codebuild_demo" {
 
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:1.0"
+    image                       = "aws/codebuild/standard:3.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
 
-    environment_variable {
-      name  = "SOME_KEY1"
-      value = "SOME_VALUE1"
-    }
+    # environment_variable {
+    #   name  = "SOME_KEY1"
+    #   value = "SOME_VALUE1"
+    # }
 
-    environment_variable {
-      name  = "SOME_KEY2"
-      value = "SOME_VALUE2"
-      type  = "PARAMETER_STORE"
-    }
+    # environment_variable {
+    #   name  = "SOME_KEY2"
+    #   value = "SOME_VALUE2"
+    #   type  = "PARAMETER_STORE"
+    # }
   }
 
-  logs_config {
-    cloudwatch_logs {
-      group_name  = "log-group"
-      stream_name = "log-stream"
-    }
+  # logs_config {
+  #   cloudwatch_logs {
+  #     group_name  = "log-group"
+  #     stream_name = "log-stream"
+  #   }
 
-    s3_logs {
-      status   = "ENABLED"
-      location = "${aws_s3_bucket.codebuild_demo.id}/build-log"
-    }
-  }
+  #   s3_logs {
+  #     status   = "ENABLED"
+  #     location = "${aws_s3_bucket.codebuild_demo.id}/build-log"
+  #   }
+  # }
 
   source {
     type            = "GITHUB"
@@ -141,20 +168,14 @@ resource "aws_codebuild_project" "codebuild_demo" {
     }
   }
 
-  source_version = "master"
+  source_version = "main"
 
   vpc_config {
-    vpc_id = aws_vpc.codebuild_demo.id
+    vpc_id = var.vpc_id
 
-    subnets = [
-      aws_subnet.codebuild_demo1.id,
-      aws_subnet.codebuild_demo2.id,
-    ]
+    subnets = var.nodes_subnet
 
-    security_group_ids = [
-      aws_security_group.codebuild_demo1.id,
-      aws_security_group.codebuild_demo2.id,
-    ]
+    security_group_ids = [aws_security_group.codebuild_sg.id]
   }
 
   tags = {
@@ -162,42 +183,42 @@ resource "aws_codebuild_project" "codebuild_demo" {
   }
 }
 
-resource "aws_codebuild_project" "project-with-cache" {
-  name           = "test-project-cache"
-  description    = "test_codebuild_project_cache"
-  build_timeout  = "5"
-  queued_timeout = "5"
+# resource "aws_codebuild_project" "project-with-cache" {
+#   name           = "test-project-cache"
+#   description    = "test_codebuild_project_cache"
+#   build_timeout  = "5"
+#   queued_timeout = "5"
 
-  service_role = aws_iam_role.codebuild_demo.arn
+#   service_role = aws_iam_role.codebuild_demo.arn
 
-  artifacts {
-    type = "NO_ARTIFACTS"
-  }
+#   artifacts {
+#     type = "NO_ARTIFACTS"
+#   }
 
-  cache {
-    type  = "LOCAL"
-    modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
-  }
+#   cache {
+#     type  = "LOCAL"
+#     modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
+#   }
 
-  environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:1.0"
-    type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+#   environment {
+#     compute_type                = "BUILD_GENERAL1_SMALL"
+#     image                       = "aws/codebuild/standard:1.0"
+#     type                        = "LINUX_CONTAINER"
+#     image_pull_credentials_type = "CODEBUILD"
 
-    environment_variable {
-      name  = "SOME_KEY1"
-      value = "SOME_VALUE1"
-    }
-  }
+#     environment_variable {
+#       name  = "SOME_KEY1"
+#       value = "SOME_VALUE1"
+#     }
+#   }
 
-  source {
-    type            = "GITHUB"
-    location        = "https://github.com/greyhats13/demo-ralali.git"
-    git_clone_depth = 1
-  }
+#   source {
+#     type            = "GITHUB"
+#     location        = "https://github.com/greyhats13/demo-ralali.git"
+#     git_clone_depth = 1
+#   }
 
-  tags = {
-    Environment = "Test"
-  }
-}
+#   tags = {
+#     Environment = "Test"
+#   }
+# }

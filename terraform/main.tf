@@ -28,6 +28,9 @@ module "ecs" {
 }
 
 # module "codebuild" {
-#   source              = "./codebuild"
+#   source        = "./codebuild"
+#   vpc_id        = module.vpc.vpc_id
+#   public_subnet = flatten([module.vpc.public_subnet])
+#   nodes_subnet  = flatten([module.vpc.nodes_subnet])
 # }
 
